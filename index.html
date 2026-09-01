@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoQuest: Simple English Eco Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0B132B;
+            --card-bg: rgba(28, 37, 65, 0.85);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --primary: #10B981;
+            --primary-hover: #059669;
+            --secondary: #38BDF8;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1C2541, #0B132B);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 880px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 99px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Narrative Story Styling */
+        .story-card {
+            background: rgba(11, 19, 43, 0.7);
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .story-img {
+            width: 110px;
+            height: 110px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--card-border);
+            flex-shrink: 0;
+        }
+
+        .story-text-container {
+            flex: 1;
+        }
+
+        .story-p {
+            font-size: 0.92rem;
+            line-height: 1.55;
+            color: #E2E8F0;
+            margin-bottom: 6px;
+        }
+
+        .story-p:last-child {
+            margin-bottom: 0;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #FFF;
+        }
+
+        /* MCQ Options Styling */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .btn-option {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-option:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--secondary);
+            transform: translateX(4px);
+        }
+
+        .btn-option.correct {
+            background: rgba(16, 185, 129, 0.25) !important;
+            border-color: var(--primary) !important;
+            color: #34D399;
+            font-weight: 700;
+        }
+
+        .btn-option.wrong {
+            background: rgba(239, 68, 68, 0.25) !important;
+            border-color: var(--danger) !important;
+            color: #F87171;
+            font-weight: 700;
+        }
+
+        /* Matching Style Improved */
+        .matching-wrapper {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .matching-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            user-select: none;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            line-height: 1.3;
+        }
+
+        .match-card:hover:not(.submitted) {
+            border-color: var(--secondary);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .match-card.selected {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.2);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .match-card.paired {
+            border-color: var(--secondary);
+            background: rgba(56, 189, 248, 0.2);
+            opacity: 0.9;
+        }
+
+        .match-card.submitted.correct-pair {
+            border-color: var(--primary) !important;
+            background: rgba(16, 185, 129, 0.25) !important;
+            color: #34D399;
+            font-weight: 700;
+            cursor: default;
+        }
+
+        .match-card.submitted.wrong-pair {
+            border-color: var(--danger) !important;
+            background: rgba(239, 68, 68, 0.25) !important;
+            color: #F87171;
+            font-weight: 700;
+            cursor: default;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            color: #0B132B;
+            font-weight: 800;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-hover);
+            transform: scale(1.02);
+        }
+
+        .btn-check {
+            background: var(--secondary);
+            color: #0B132B;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .feedback-box {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .feedback-box.show { display: block; }
+        .feedback-box.correct { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+        .feedback-box.wrong { background: rgba(239, 68, 68, 0.2); color: #F87171; }
+
+        .score-board {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .score-board h2 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        @media (max-width: 640px) {
+            .story-card { flex-direction: column; text-align: center; }
+            .matching-container { grid-template-columns: 1fr; }
+            .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="header">
+        <div class="title">EcoQuest English 🌿</div>
+        <div class="stats-bar">
+            <div class="badge" id="story-indicator">Story: 1 / 3</div>
+            <div class="badge" id="score-indicator">Score: 0</div>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <div style="text-align: center; padding: 30px 0;">
+            <h1 style="font-size: 2rem; margin-bottom: 14px;">Daily Life & Environment Challenge</h1>
+            <p style="color: var(--text-muted); max-width: 580px; margin: 0 auto 24px; line-height: 1.6; font-size: 0.95rem;">
+                Learn simple English and help the environment! Read 3 short stories, answer 15 Multiple Choice Questions, and complete 2 Matching Activities (5 pairs each). 
+            </p>
+            <button class="btn-action" onclick="startGame()">Start Game ➔</button>
+        </div>
+    </div>
+
+    <!-- GAMEPLAY SCREEN -->
+    <div id="game-screen" class="screen">
+        <div class="story-card">
+            <img id="story-image" class="story-img" src="" alt="Story Picture">
+            <div class="story-text-container" id="story-text"></div>
+        </div>
+
+        <div class="question-title" id="question-text">Question...</div>
+        <div id="answer-container"></div>
+        <div id="feedback" class="feedback-box"></div>
+
+        <div class="controls">
+            <button id="check-match-btn" class="btn-action btn-check" style="display: none;" onclick="checkMatchingAnswers()">Submit Pairs ➔</button>
+            <button id="next-btn" class="btn-action" style="display: none;" onclick="nextQuestion()">Next ➔</button>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <div class="score-board">
+            <h2>Great Job! 🎉</h2>
+            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 16px;">Your Final Score:</p>
+            <div style="font-size: 3.8rem; font-weight: 800; color: #FFF; margin-bottom: 24px;" id="final-score">0</div>
+            <button class="btn-action" onclick="restartGame()">Play Again 🔄</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Vocabulary simplified to A2-B1 English Level
+const storiesData = [
+    {
+        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=300&q=80",
+        paragraphs: [
+            "Paragraph 1: Maya saw that her house electricity bill was very high last month. At the same time, the trash can in her kitchen was always full of food waste every day. She wanted to save money and help the environment at home.",
+            "Paragraph 2: Maya decided to make some simple changes. She turned off lights when leaving rooms and unplugged phone chargers. She also started putting fruit and vegetable peels into a compost bin to make soil fertilizer."
+        ],
+        questions: [
+            { type: 'mc', q: "1. Why did Maya want to change her habits at home?", options: ["Because electricity was high and trash was overflowing", "Because she bought new kitchen items", "Because her teacher asked her to do a project", "Because she wanted to move to a new house"], answer: 0 },
+            { type: 'mc', q: "2. What did Maya do with her phone charger when not using it?", options: ["She left it plugged in all night", "She threw it in the trash", "She unplugged it to save energy", "She gave it to her neighbor"], answer: 2 },
+            { type: 'mc', q: "3. Where did Maya put fruit and vegetable peels?", options: ["In a river near her house", "Into a compost bin", "In a plastic shopping bag", "Under her bedroom bed"], answer: 1 },
+            { type: 'mc', q: "4. What is the main goal of Maya's new routine?", options: ["To buy a big TV", "To save energy and reduce household waste", "To cook more food every day", "To clean the house faster"], answer: 1 },
+            { type: 'mc', q: "5. What does the word 'full' mean in Paragraph 1?", options: ["Empty", "Holding as much as possible", "Very clean", "Broken"], answer: 1 },
+            { 
+                type: 'match', 
+                q: "Match each daily item or action with its correct group!", 
+                pairs: [
+                    { left: "Fruit peels", right: "Organic Compost" },
+                    { left: "Unplugging chargers", right: "Saving Electricity" },
+                    { left: "Cloth bag", right: "Less Plastic Waste" },
+                    { left: "LED light bulbs", right: "Efficient Lighting" },
+                    { left: "Reusing rinse water", right: "Saving Water" }
+                ]
+            }
+        ]
+    },
+    {
+        image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=300&q=80",
+        paragraphs: [
+            "Paragraph 1: In Green City, there were too many cars on the roads every morning. The vehicle smoke made the air dirty and difficult to breathe. Many people complained about loud noise and bad air quality.",
+            "Paragraph 2: The city government built new bicycle lanes and added more public buses. Leo, a high school teacher, decided to stop driving his car to work. He started riding a bicycle every day to keep the air clean."
+        ],
+        questions: [
+            { type: 'mc', q: "6. What caused the dirty air in Green City?", options: ["Smoke from too many cars", "Dust from new houses", "Rain storms", "Trash burning in gardens"], answer: 0 },
+            { type: 'mc', q: "7. How did people feel about the city traffic?", options: ["They liked the loud noise", "They complained about bad air and noise", "They felt happy about the traffic jams", "They thought it was very peaceful"], answer: 1 },
+            { type: 'mc', q: "8. What did the city government build to help?", options: ["New bicycle lanes and public buses", "A big car parking area", "More gas stations", "A big shopping mall"], answer: 0 },
+            { type: 'mc', q: "9. How does Leo go to work now?", options: ["By driving his private car", "By riding a bicycle", "By taking a taxi", "By walking 10 kilometers"], answer: 1 },
+            { type: 'mc', q: "10. What does the word 'built' mean in Paragraph 2?", options: ["Made or created", "Destroyed", "Bought", "Painted"], answer: 0 },
+            { 
+                type: 'match', 
+                q: "Match each transport word with its correct meaning!", 
+                pairs: [
+                    { left: "Car smoke", right: "Air pollution" },
+                    { left: "Public bus", right: "Shared transport" },
+                    { left: "Riding a bike", right: "Clean travel habit" },
+                    { left: "Carpooling", right: "Sharing a ride with friends" },
+                    { left: "Walking", right: "Zero emission movement" }
+                ]
+            }
+        ]
+    },
+    {
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&q=80",
+        paragraphs: [
+            "Paragraph 1: Blue Beach was a beautiful place, but tourists left many plastic bottles and bags on the sand. Sea animals like turtles often ate floating plastic because they thought it was food, which made them sick.",
+            "Paragraph 2: A group of young volunteers decided to take action. They collected trash every Saturday morning and asked local cafes to stop using plastic straws. Their hard work kept the beach clean and saved marine life."
+        ],
+        questions: [
+            { type: 'mc', q: "11. What problem did tourists cause at Blue Beach?", options: ["They left plastic bottles and bags on the sand", "They played loud music at night", "They caught too many big fish", "They built big sand castles"], answer: 0 },
+            { type: 'mc', q: "12. Why was plastic dangerous for sea turtles?", options: ["It was too cold for them", "They ate it thinking it was food", "It blocked the sunlight", "It made the sea water salty"], answer: 1 },
+            { type: 'mc', q: "13. What did the young volunteers do every Saturday?", options: ["They sold cold drinks", "They collected trash on the beach", "They went swimming", "They rented umbrellas"], answer: 1 },
+            { type: 'mc', q: "14. What did the volunteers ask local cafes to do?", options: ["To sell cheaper food", "To stop using plastic straws", "To close early on weekends", "To clean the tables"], answer: 1 },
+            { type: 'mc', q: "15. What was the good result of the volunteers' work?", options: ["The beach became clean and animals were safe", "The cafes closed down", "Tourists stopped visiting", "More plastic was produced"], answer: 0 }
+        ]
+    }
+];
+
+let currentStoryIdx = 0;
+let currentQuestionIdx = 0;
+let score = 0;
+
+// Matching State
+let selectedLeft = null;
+let userPairs = {}; // Maps leftId -> rightId
+let currentPairsData = [];
+
+function startGame() {
+    document.getElementById('start-screen').classList.remove('active');
+    document.getElementById('game-screen').classList.add('active');
+    currentStoryIdx = 0;
+    currentQuestionIdx = 0;
+    score = 0;
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const story = storiesData[currentStoryIdx];
+    const qData = story.questions[currentQuestionIdx];
+
+    // Calculate question overall index
+    let totalQIndex = 0;
+    for(let i=0; i<currentStoryIdx; i++) {
+        totalQIndex += storiesData[i].questions.length;
+    }
+    totalQIndex += (currentQuestionIdx + 1);
+
+    document.getElementById('story-image').src = story.image;
+    
+    const storyTextDiv = document.getElementById('story-text');
+    storyTextDiv.innerHTML = story.paragraphs.map(p => `<p class="story-p">${p}</p>`).join('');
+
+    document.getElementById('question-text').innerText = `[Question ${totalQIndex} / 17] ${qData.q}`;
+    document.getElementById('story-indicator').innerText = `Story: ${currentStoryIdx + 1} / 3`;
+    document.getElementById('score-indicator').innerText = `Score: ${score}`;
+    
+    const container = document.getElementById('answer-container');
+    const feedback = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+    const checkMatchBtn = document.getElementById('check-match-btn');
+
+    container.innerHTML = '';
+    feedback.className = 'feedback-box';
+    nextBtn.style.display = 'none';
+    checkMatchBtn.style.display = 'none';
+
+    if (qData.type === 'mc') {
+        const grid = document.createElement('div');
+        grid.className = 'options-grid';
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = opt;
+            btn.onclick = () => checkMC(idx, qData.answer, btn);
+            grid.appendChild(btn);
+        });
+        container.appendChild(grid);
+    } else if (qData.type === 'match') {
+        renderFreeMatching(qData.pairs);
+        checkMatchBtn.style.display = 'block';
+    }
+}
+
+function checkMC(selected, correct, btn) {
+    disableOptions();
+    const feedback = document.getElementById('feedback');
+    if (selected === correct) {
+        btn.classList.add('correct');
+        score += 10;
+        feedback.innerText = "Correct! +10 Points";
+        feedback.classList.add('correct', 'show');
+    } else {
+        btn.classList.add('wrong');
+        score = Math.max(0, score - 2);
+        feedback.innerText = "Incorrect answer!";
+        feedback.classList.add('wrong', 'show');
+    }
+    document.getElementById('score-indicator').innerText = `Score: ${score}`;
+    document.getElementById('next-btn').style.display = 'block';
+}
+
+function disableOptions() {
+    const btns = document.querySelectorAll('.btn-option');
+    btns.forEach(b => b.disabled = true);
+}
+
+/* ===================================================
+   NEW FLEXIBLE MATCHING SYSTEM (Freedom to choose/re-pair)
+====================================================== */
+function renderFreeMatching(pairs) {
+    selectedLeft = null;
+    userPairs = {};
+    currentPairsData = pairs;
+
+    const container = document.getElementById('answer-container');
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'matching-wrapper';
+
+    const matchingGrid = document.createElement('div');
+    matchingGrid.className = 'matching-container';
+
+    // Left items with original index
+    const leftItems = pairs.map((p, i) => ({ text: p.left, id: i }));
+    // Right items randomized
+    const rightItems = pairs.map((p, i) => ({ text: p.right, id: i })).sort(() => Math.random() - 0.5);
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'matching-column';
+    leftItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'match-card left-card';
+        card.innerText = item.text;
+        card.dataset.id = item.id;
+        card.onclick = () => onLeftClick(card);
+        leftCol.appendChild(card);
+    });
+
+    const rightCol = document.createElement('div');
+    rightCol.className = 'matching-column';
+    rightItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'match-card right-card';
+        card.innerText = item.text;
+        card.dataset.id = item.id;
+        card.onclick = () => onRightClick(card);
+        rightCol.appendChild(card);
+    });
+
+    matchingGrid.appendChild(leftCol);
+    matchingGrid.appendChild(rightCol);
+    wrapper.appendChild(matchingGrid);
+    container.appendChild(wrapper);
+}
+
+function onLeftClick(card) {
+    if (card.classList.contains('submitted')) return;
+
+    document.querySelectorAll('.left-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedLeft = card;
+}
+
+function onRightClick(card) {
+    if (card.classList.contains('submitted')) return;
+    if (!selectedLeft) return; // Must select left card first
+
+    const leftId = selectedLeft.dataset.id;
+    const rightId = card.dataset.id;
+
+    // Clear previous pairs associated with this left or right card
+    for (let lId in userPairs) {
+        if (lId === leftId || userPairs[lId] === rightId) {
+            delete userPairs[lId];
+        }
+    }
+
+    // Assign pair
+    userPairs[leftId] = rightId;
+
+    // UI Update
+    selectedLeft.classList.remove('selected');
+    selectedLeft = null;
+    updateMatchingUI();
+}
+
+function updateMatchingUI() {
+    // Reset classes
+    document.querySelectorAll('.match-card').forEach(c => {
+        if (!c.classList.contains('submitted')) {
+            c.classList.remove('paired', 'selected');
+        }
+    });
+
+    // Apply paired styling based on userPairs
+    for (let lId in userPairs) {
+        const rId = userPairs[lId];
+        const leftCard = document.querySelector(`.left-card[data-id="${lId}"]`);
+        const rightCard = document.querySelector(`.right-card[data-id="${rId}"]`);
+
+        if (leftCard) leftCard.classList.add('paired');
+        if (rightCard) rightCard.classList.add('paired');
+    }
+}
+
+function checkMatchingAnswers() {
+    const totalPairs = currentPairsData.length;
+    const userPairCount = Object.keys(userPairs).length;
+
+    if (userPairCount < totalPairs) {
+        alert("Please match all 5 pairs before submitting!");
+        return;
+    }
+
+    let correctCount = 0;
+
+    // Validate pairs
+    for (let lId in userPairs) {
+        const rId = userPairs[lId];
+        const leftCard = document.querySelector(`.left-card[data-id="${lId}"]`);
+        const rightCard = document.querySelector(`.right-card[data-id="${rId}"]`);
+
+        leftCard.classList.add('submitted');
+        rightCard.classList.add('submitted');
+
+        // Check if left index equals right index
+        if (lId === rId) {
+            leftCard.classList.add('correct-pair');
+            rightCard.classList.add('correct-pair');
+            correctCount++;
+        } else {
+            leftCard.classList.add('wrong-pair');
+            rightCard.classList.add('wrong-pair');
+        }
+    }
+
+    const pointsEarned = correctCount * 5;
+    score += pointsEarned;
+    document.getElementById('score-indicator').innerText = `Score: ${score}`;
+
+    const feedback = document.getElementById('feedback');
+    feedback.innerText = `You matched ${correctCount} / ${totalPairs} correctly! (+${pointsEarned} Points)`;
+    feedback.classList.add(correctCount > 2 ? 'correct' : 'wrong', 'show');
+
+    document.getElementById('check-match-btn').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+    currentQuestionIdx++;
+    if (currentQuestionIdx >= storiesData[currentStoryIdx].questions.length) {
+        currentStoryIdx++;
+        currentQuestionIdx = 0;
+    }
+
+    if (currentStoryIdx >= storiesData.length) {
+        showEndScreen();
+    } else {
+        loadQuestion();
+    }
+}
+
+function showEndScreen() {
+    document.getElementById('game-screen').classList.remove('active');
+    document.getElementById('end-screen').classList.add('active');
+    document.getElementById('final-score').innerText = score;
+}
+
+function restartGame() {
+    document.getElementById('end-screen').classList.remove('active');
+    startGame();
+}
+</script>
+</body>
+</html>
