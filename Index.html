@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Linguistic Nomad: Past Tense Investigation</title>
+    <!-- Google Fonts & Tailwind CSS for Modern Look -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e0f2fe 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-700">
+
+    <div id="app" class="w-full max-w-xl">
+        
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <div id="welcome-screen" class="glass-card rounded-3xl p-8 shadow-xl text-center space-y-6">
+            <div class="inline-block bg-purple-100 text-purple-600 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase">
+                The Linguistic Nomad • A1-A2 Level
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800">Misteri Arsip Masa Lalu</h1>
+            <p class="text-slate-500 text-sm leading-relaxed">
+                Selamat datang, Archival Agent! Kota virtual kita kehilangan jejak memori akibat kerusakan sistem Past Tense. Selesaikan 25 kasus investigasi tata bahasa untuk memulihkan kota ini.
+            </p>
+            
+            <div class="space-y-3 pt-2">
+                <input type="text" id="student-name" placeholder="Masukkan Nama Lengkapmu..." 
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm bg-white/50 text-center font-medium">
+                <button onclick="startGame()" 
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-purple-200 transition-all cursor-pointer">
+                    Mulai Investigasi
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: QUIZ SCREEN -->
+        <div id="quiz-screen" class="glass-card rounded-3xl p-8 shadow-xl hidden space-y-6">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span id="progress-indicator">Kasus 1 dari 25</span>
+                <span id="score-indicator" class="text-purple-600">Skor: 0</span>
+            </div>
+
+            <!-- Progress Bar Modern -->
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-purple-600 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <div class="space-y-2">
+                <span id="question-category" class="inline-block text-[11px] font-bold text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md">Reguler Verb</span>
+                <h2 id="question-text" class="text-lg font-bold text-slate-800 leading-snug"></h2>
+            </div>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Pilihan Jawaban akan dimasukkan via JavaScript -->
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULT SCREEN -->
+        <div id="result-screen" class="glass-card rounded-3xl p-8 shadow-xl hidden text-center space-y-6">
+            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+                🏆
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Investigasi Selesai!</h2>
+                <p id="result-student-name" class="text-sm font-medium text-purple-600 mt-1"></p>
+            </div>
+
+            <div class="bg-white/60 p-6 rounded-2xl border border-slate-100 space-y-2">
+                <p class="text-xs text-slate-400 uppercase font-semibold">Skor Akhir Kamu</p>
+                <h1 id="final-score" class="text-5xl font-extrabold text-slate-800">0</h1>
+                <p id="result-message" class="text-xs text-slate-500 mt-2 font-medium"></p>
+            </div>
+
+            <button onclick="restartGame()" 
+                class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer">
+                Mainkan Lagi
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Database 25 Soal Past Tense (A1-A2)
+        const questions = [
+            { q: "Yesterday, I ___ to the supermarket to buy some groceries.", options: ["go", "went", "gone", "going"], answer: 1, category: "Irregular Verb" },
+            { q: "She ___ a delicious chocolate cake last night.", options: ["bake", "bakes", "baked", "baking"], answer: 2, category: "Regular Verb" },
+            { q: "They ___ playing football when it started to rain.", options: ["was", "were", "is", "are"], answer: 1, category: "To be (Past)" },
+            { q: "He ___ his keys on the table an hour ago.", options: ["leave", "leaves", "left", "leaving"], answer: 2, category: "Irregular Verb" },
+            { q: "We ___ a great movie at the cinema last weekend.", options: ["see", "saw", "seen", "seeing"], answer: 1, category: "Irregular Verb" },
+            { q: "My brother ___ his room yesterday morning.", options: ["clean", "cleaned", "cleaning", "cleans"], answer: 1, category: "Regular Verb" },
+            { q: "Where ___ you spend your holiday last year?", options: ["do", "does", "did", "done"], answer: 2, category: "Past Interrogative" },
+            { q: "I ___ not attend the meeting because I was sick.", options: ["do", "does", "did", "wasn't"], answer: 2, category: "Past Negative" },
+            { q: "The dog ___ loudly when the stranger knocked.", options: ["bark", "barks", "barked", "barking"], answer: 2, category: "Regular Verb" },
+            { q: "She ___ a new smartphone two days ago.", options: ["buy", "bought", "buys", "buying"], answer: 1, category: "Irregular Verb" },
+            { q: "What time ___ you wake up this morning?", options: ["do", "did", "were", "had"], answer: 1, category: "Past Interrogative" },
+            { q: "He ___ very tired after working all day long.", options: ["is", "was", "were", "be"], answer: 1, category: "To be (Past)" },
+            { q: "They ___ to Bali for their vacation last month.", options: ["fly", "flies", "flew", "flown"], answer: 2, category: "Irregular Verb" },
+            { q: "I ___ an interesting book before going to sleep.", options: ["read (dibaca red)", "read (dibaca riid)", "reading", "reads"], answer: 0, category: "Irregular Verb" },
+            { q: "My mother ___ a cup of hot tea this morning.", options: ["drink", "drank", "drunk", "drinking"], answer: 1, category: "Irregular Verb" },
+            { q: "The students ___ their homework on time yesterday.", options: ["finish", "finishes", "finished", "finishing"], answer: 2, category: "Regular Verb" },
+            { q: "Why ___ she cry during the movie?", options: ["do", "does", "did", "is"], answer: 2, category: "Past Interrogative" },
+            { q: "We ___ at home all day yesterday because of the rain.", options: ["stay", "stayed", "staying", "stays"], answer: 1, category: "Regular Verb" },
+            { q: "He ___ a letter to his grandparents last week.", options: ["write", "writes", "wrote", "written"], answer: 2, category: "Irregular Verb" },
+            { q: "I ___ my homework before playing video games.", options: ["complete", "completed", "completing", "completes"], answer: 1, category: "Regular Verb" },
+            { q: "It ___ a cold and rainy day yesterday.", options: ["is", "was", "were", "be"], answer: 1, category: "To be (Past)" },
+            { q: "They ___ lunch at a nice restaurant downtown.", options: ["eat", "ate", "eaten", "eating"], answer: 1, category: "Irregular Verb" },
+            { q: "She ___ her phone on the bus yesterday.", options: ["lose", "lost", "loses", "losing"], answer: 1, category: "Irregular Verb" },
+            { q: "The children ___ happily in the park after school.", options: ["play", "played", "playing", "plays"], answer: 1, category: "Regular Verb" },
+            { q: "I ___ a strange noise outside my window last night.", options: ["hear", "heard", "hearing", "hears"], answer: 1, category: "Irregular Verb" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let studentName = "";
+
+        const welcomeScreen = document.getElementById("welcome-screen");
+        const quizScreen = document.getElementById("quiz-screen");
+        const resultScreen = document.getElementById("result-screen");
+        const studentNameInput = document.getElementById("student-name");
+        
+        const questionText = document.getElementById("question-text");
+        const questionCategory = document.getElementById("question-category");
+        const optionsContainer = document.getElementById("options-container");
+        const progressIndicator = document.getElementById("progress-indicator");
+        const scoreIndicator = document.getElementById("score-indicator");
+        const progressBar = document.getElementById("progress-bar");
+        
+        const resultStudentName = document.getElementById("result-student-name");
+        const finalScore = document.getElementById("final-score");
+        const resultMessage = document.getElementById("result-message");
+
+        function startGame() {
+            studentName = studentNameInput.value.trim();
+            if (!studentName) {
+                alert("Tolong masukkan nama lengkapmu terlebih dahulu ya!");
+                return;
+            }
+            welcomeScreen.classList.add("hidden");
+            quizScreen.classList.remove("hidden");
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentQ = questions[currentQuestionIndex];
+            questionText.innerText = currentQ.q;
+            questionCategory.innerText = currentQ.category;
+            progressIndicator.innerText = `Kasus ${currentQuestionIndex + 1} dari ${questions.length}`;
+            scoreIndicator.innerText = `Skor: ${score}`;
+            
+            let progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            optionsContainer.innerHTML = "";
+            currentQ.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200/80 bg-white/60 hover:bg-purple-50 hover:border-purple-300 font-medium text-sm transition-all shadow-sm cursor-pointer";
+                btn.innerText = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(selectedIndex) {
+            const currentQ = questions[currentQuestionIndex];
+            const buttons = optionsContainer.getElementsByTagName("button");
+
+            // Disable buttons sementara untuk efek transisi
+            for (let btn of buttons) {
+                btn.disabled = true;
+            }
+
+            if (selectedIndex === currentQ.answer) {
+                buttons[selectedIndex].classList.add("bg-emerald-50", "border-emerald-400", "text-emerald-700");
+                score += 4; // Total 25 soal x 4 = 100 poin maksimal
+            } else {
+                buttons[selectedIndex].classList.add("bg-rose-50", "border-rose-400", "text-rose-700");
+                buttons[currentQ.answer].classList.add("bg-emerald-50", "border-emerald-400", "text-emerald-700");
+            }
+
+            scoreIndicator.innerText = `Skor: ${score}`;
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1000);
+        }
+
+        function showResult() {
+            quizScreen.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+            
+            resultStudentName.innerText = `Agent: ${studentName}`;
+            finalScore.innerText = score;
+
+            if (score >= 85) {
+                resultMessage.innerText = "Luar biasa! Memori kota pulih sepenuhnya. Kamu sangat menguasai Past Tense!";
+            } else if (score >= 60) {
+                resultMessage.innerText = "Kerja bagus! Kota mulai terang kembali, namun masih ada beberapa kesalahan tata bahasa.";
+            } else {
+                resultMessage.innerText = "Terus berlatih ya! Pelajari kembali Regular dan Irregular verbs untuk investigasi berikutnya.";
+            }
+        }
+
+        function restartGame() {
+            resultScreen.classList.add("hidden");
+            welcomeScreen.classList.remove("hidden");
+            studentNameInput.value = "";
+        }
+    </script>
+</body>
+</html>
